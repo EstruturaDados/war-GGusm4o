@@ -15,12 +15,22 @@
 // ============================================================================
 
 // Inclusão das bibliotecas padrão necessárias para entrada/saída, alocação de memória, manipulação de strings e tempo.
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // --- Constantes Globais ---
 // Definem valores fixos para o número de territórios, missões e tamanho máximo de strings, facilitando a manutenção.
 
+
 // --- Estrutura de Dados ---
 // Define a estrutura para um território, contendo seu nome, a cor do exército que o domina e o número de tropas.
+struct Territorio {
+    char nome[30];
+    char corExercito[10];
+    int numTropas;
+
+};
 
 // --- Protótipos das Funções ---
 // Declarações antecipadas de todas as funções que serão usadas no programa, organizadas por categoria.
@@ -28,6 +38,10 @@
 // Funções de interface com o usuário:
 // Funções de lógica principal do jogo:
 // Função utilitária:
+void limparBufferEntrada() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
 
 // --- Função Principal (main) ---
 // Função principal que orquestra o fluxo do jogo, chamando as outras funções em ordem.
@@ -36,9 +50,43 @@ int main() {
     // - Define o locale para português.
     // - Inicializa a semente para geração de números aleatórios com base no tempo atual.
     // - Aloca a memória para o mapa do mundo e verifica se a alocação foi bem-sucedida.
+
     // - Preenche os territórios com seus dados iniciais (tropas, donos, etc.).
     // - Define a cor do jogador e sorteia sua missão secreta.
+    // Declaração de vetor para armazenar 5 territórios
+    struct Territorio terrorio[5];
 
+    // Entrada de dados para cada território
+    printf("======================================\n");
+    printf("Vamos cadastrar os 5 territorios iniciais do nosso mundo:\n");
+
+    for (int i = 0; i < 5; i++) {
+        printf("\n--- Cadastrando Territorio %d ---", i + 1);
+        printf("\nNome do Territorio: ");
+        fgets(terrorio[i].nome, 30, stdin);
+        terrorio[i].nome[strcspn(terrorio[i].nome, "\n")] = '\0'; // Remove o '\n' do final
+
+        printf("Cor do Exercito (ex: Azul, Vermelho): ");
+        fgets(terrorio[i].corExercito, 10, stdin);
+        terrorio[i].corExercito[strcspn(terrorio[i].corExercito, "\n")] = '\0';
+
+        printf("Numero de Tropas: ");
+        scanf("%d", &terrorio[i].numTropas);
+        limparBufferEntrada(); // Limpa o '\n' deixado pelo scanf.
+        
+        }
+        printf("\nCadastro inicial concluido com sucesso!\n");
+        // Exibição dos territórios cadastrados
+        printf("\n======================================\n");
+        printf("   MAPA DO MUNDO - ESTADDO INICIAL \n");
+        printf("======================================\n");
+        for (int i = 0; i < 5; i++) {
+            printf("Territorio %d:\n", i + 1);
+            printf("Nome: %s\n", terrorio[i].nome);
+            printf("Cor do Exercito: %s\n", terrorio[i].corExercito);
+            printf("Numero de Tropas: %d\n", terrorio[i].numTropas);
+            printf("--------------------------------------\n");
+        }
     // 2. Laço Principal do Jogo (Game Loop):
     // - Roda em um loop 'do-while' que continua até o jogador sair (opção 0) ou vencer.
     // - A cada iteração, exibe o mapa, a missão e o menu de ações.
