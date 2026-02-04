@@ -28,8 +28,7 @@
 struct Territorio {
     char nome[30];
     char corExercito[10];
-    int numTropas;
-
+    int numeroTropas;
 };
 
 // --- Protótipos das Funções ---
@@ -42,6 +41,8 @@ void limparBufferEntrada() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
+
+
 
 // --- Função Principal (main) ---
 // Função principal que orquestra o fluxo do jogo, chamando as outras funções em ordem.
@@ -58,7 +59,8 @@ int main() {
 
     // Entrada de dados para cada território
     printf("======================================\n");
-    printf("Vamos cadastrar os 5 territorios iniciais do nosso mundo:\n");
+    printf("  WAR ESTRUTURADO - CADASTRO INICIAL\n");
+    printf("======================================\n");
 
     for (int i = 0; i < 5; i++) {
         printf("\n--- Cadastrando Territorio %d ---", i + 1);
@@ -71,22 +73,20 @@ int main() {
         terrorio[i].corExercito[strcspn(terrorio[i].corExercito, "\n")] = '\0';
 
         printf("Numero de Tropas: ");
-        scanf("%d", &terrorio[i].numTropas);
+        scanf("%d", &terrorio[i].numeroTropas);
         limparBufferEntrada(); // Limpa o '\n' deixado pelo scanf.
-        
+
         }
+
         printf("\nCadastro inicial concluido com sucesso!\n");
         // Exibição dos territórios cadastrados
         printf("\n======================================\n");
-        printf("   MAPA DO MUNDO - ESTADDO INICIAL \n");
+        printf("   MAPA DO MUNDO - ESTADDO ATUAL \n");
         printf("======================================\n");
         for (int i = 0; i < 5; i++) {
-            printf("Territorio %d:\n", i + 1);
-            printf("Nome: %s\n", terrorio[i].nome);
-            printf("Cor do Exercito: %s\n", terrorio[i].corExercito);
-            printf("Numero de Tropas: %d\n", terrorio[i].numTropas);
-            printf("--------------------------------------\n");
+            printf("%d. %s (Exercito %s, Tropas: %d\n)", i + 1, terrorio[i].nome, terrorio[i].corExercito, terrorio[i].numeroTropas);
         }
+
     // 2. Laço Principal do Jogo (Game Loop):
     // - Roda em um loop 'do-while' que continua até o jogador sair (opção 0) ou vencer.
     // - A cada iteração, exibe o mapa, a missão e o menu de ações.
