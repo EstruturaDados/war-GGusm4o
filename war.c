@@ -22,7 +22,8 @@
 
 // --- Constantes Globais ---
 // Definem valores fixos para o número de territórios, missões e tamanho máximo de strings, facilitando a manutenção.
-
+#define TOTAL_MISSOES 5
+#define TAMANHO_MISSAO 100
 
 // --- Estrutura de Dados ---
 // Define a estrutura para um território, contendo seu nome, a cor do exército que o domina e o número de tropas.
@@ -35,6 +36,11 @@ struct Territorio {
 // --- Protótipos das Funções ---
 // Declarações antecipadas de todas as funções que serão usadas no programa, organizadas por categoria.
 // Funções de setup e gerenciamento de memória:
+void assignMission(char* destination, char* missions[], int totalMissions);
+int checkMission(char* mission, struct Territorio* map, int size);
+void displayMission(const char* mission);
+void freeMemory(struct Territorio* map, char* mission);
+
 void limparBufferEntrada() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
@@ -64,8 +70,7 @@ void atacar(struct Territorio* atacante, struct Territorio* defensor) {
         defensor->numeroTropas--;
 
         if (defensor->numeroTropas <= 0) {
-            printf("CONQUISTA! O territorio %s foi conquistado pelo exercito %s!\n", defensor->nome, atacante->corExercito);     
-                defensor->nome, atacante->corExercito;
+            printf("CONQUISTA! O territorio %s foi conquistado pelo exercito %s!\n", defensor->nome, atacante->corExercito);
             
             // 1. TRANSFERE A COR (Isso muda o dono!)
             strcpy(defensor->corExercito, atacante->corExercito);
@@ -89,6 +94,120 @@ void atacar(struct Territorio* atacante, struct Territorio* defensor) {
         }
     }
 }
+
+// assignMission():
+// Atribui aleatoriamente uma missão do array de missões para o jogador.
+// Usa strcpy para copiar a missão sorteada para a variável de destino do jogador.
+void assignMission(char* destination, char* missions[], int totalMissions) {
+    int missionIndex = rand() % totalMissions;
+    strcpy(destination, missions[missionIndex]);
+}
+
+// checkMission():
+// Verifica se a missão do jogador foi cumprida com base no estado atual do mapa.
+// Retorna 1 se a missão foi cumprida, 0 caso contrário.
+int checkMission(char* mission, struct Territorio* map, int size) {
+    // Verifica se a missão é "Conquistar 3 territórios consecutivos"
+    if (strstr(mission, "3 territorios consecutivos") != NULL) {
+        // Verifica se existem 3 territórios consecutivos da mesma cor
+        for (int i = 0; i < size - 2; i++) {
+            if (strcmp(map[i].corExercito, map[i+1].corExercito) == 0 &&
+                strcmp(map[i].corExercito, map[i+2].corExercito) == 0) {
+                return 1;
+            }
+        }
+    }
+    // Verifica se a missão é eliminar todas as tropas vermelhas
+    else if (strstr(mission, "tropas vermelhas") != NULL) {
+        int temVermelho = 0;
+        for (int i = 0; i < size; i++) {
+            if (strcmp(map[i].corExercito, "Vermelho") == 0 || 
+                strcmp(map[i].corExercito, "vermelho") == 0) {
+                temVermelho = 1;
+                break;
+            }
+        }
+        return !temVermelho;
+    }
+    // Verifica se a missão é conquistar 4 territórios
+    else if (strstr(mission, "4 territorios") != NULL) {
+        // Conta territórios da mesma cor (assumindo que o jogador tem uma cor específica)
+        // Para simplificar, vamos verificar se alguma cor tem 4+ territórios
+        char cores[10][10];
+        int contagem[10] = {0};
+        int totalCores = 0;
+        
+        for (int i = 0; i < size; i++) {
+            int encontrado = 0;
+            for (int j = 0; j < totalCores; j++) {
+                if (strcmp(cores[j], map[i].corExercito) == 0) {
+                    contagem[j]++;
+                    encontrado = 1;
+                    break;
+                }
+            }
+            if (!encontrado && totalCores < 10) {
+                strcpy(cores[totalCores], map[i].corExercito);
+                contagem[totalCores] = 1;
+                totalCores++;
+            }
+        }
+        
+        for (int i = 0; i < totalCores; i++) {
+            if (contagem[i] >= 4) {
+                return 1;
+            }
+        }
+    }
+    // Verifica se a missão é ter tropas em todos os territórios
+    else if (strstr(mission, "todos os territorios") != NULL) {
+        // Verifica se todos os territórios têm a mesma cor
+        if (size > 0) {
+            for (int i = 1; i < size; i++) {
+                if (strcmp(map[0].corExercito, map[i].corExercito) != 0) {
+                    return 0;
+                }
+            }
+            return 1;
+        }
+    }
+    // Verifica se a missão é eliminar tropas azuis
+    else if (strstr(mission, "tropas azuis") != NULL) {
+        int temAzul = 0;
+        for (int i = 0; i < size; i++) {
+            if (strcmp(map[i].corExercito, "Azul") == 0 || 
+                strcmp(map[i].corExercito, "azul") == 0) {
+                temAzul = 1;
+                break;
+            }
+        }
+        return !temAzul;
+    }
+    
+    return 0;
+}
+
+// displayMission():
+// Exibe a missão atual do jogador na tela.
+void displayMission(const char* mission) {
+    printf("\n======================================\n");
+    printf("   SUA MISSAO SECRETA\n");
+    printf("======================================\n");
+    printf("%s\n", mission);
+    printf("======================================\n\n");
+}
+
+// freeMemory():
+// Libera toda a memória alocada dinamicamente para evitar vazamentos de memória.
+void freeMemory(struct Territorio* map, char* mission) {
+    if (map != NULL) {
+        free(map);
+    }
+    if (mission != NULL) {
+        free(mission);
+    }
+}
+
 // Função utilitária:
 
 // --- Função Principal (main) ---
@@ -98,6 +217,26 @@ int main() {
     // - Define o locale para português.
     // - Inicializa a semente para geração de números aleatórios com base no tempo atual.
     srand(time(NULL));
+    
+    // Array de missões disponíveis
+    char* missions[TOTAL_MISSOES] = {
+        "Conquistar 3 territorios consecutivos",
+        "Eliminar todas as tropas vermelhas do mapa",
+        "Conquistar 4 territorios de qualquer cor",
+        "Dominar todos os territorios do mapa",
+        "Eliminar todas as tropas azuis do mapa"
+    };
+    
+    // Aloca memória para a missão do jogador
+    char* missaoJogador = (char*) malloc(TAMANHO_MISSAO * sizeof(char));
+    if (missaoJogador == NULL) {
+        printf("Erro ao alocar memoria para a missao!\n");
+        return 1;
+    }
+    
+    // Atribui uma missão aleatória ao jogador
+    assignMission(missaoJogador, missions, TOTAL_MISSOES);
+    
     // - Aloca a memória para o mapa do mundo e verifica se a alocação foi bem-sucedida.
     // - Preenche os territórios com seus dados iniciais (tropas, donos, etc.).
     int quantidadeTerritorios;
@@ -118,8 +257,9 @@ int main() {
     territorio = (struct Territorio*) calloc(quantidadeTerritorios, sizeof(struct Territorio));
 
     if (territorio == NULL) {
-    printf("Erro de memoria!\n");
-    return 1;
+        printf("Erro de memoria!\n");
+        free(missaoJogador);
+        return 1;
     }
 
     for (int i = 0; i < quantidadeTerritorios; i++) {
@@ -139,6 +279,10 @@ int main() {
         }
 
         printf("\nCadastro inicial concluido com sucesso!\n");
+        
+        // Exibe a missão secreta do jogador
+        displayMission(missaoJogador);
+        
         // Exibição dos territórios cadastrados
         printf("\n======================================\n");
         printf("   MAPA DO MUNDO - ESTADDO ATUAL \n");
@@ -186,6 +330,19 @@ int main() {
             } else {
                 printf("Jogada invalida!\n");
             }
+            
+            // Verifica se a missão foi cumprida ao final de cada turno
+            if (checkMission(missaoJogador, territorio, quantidadeTerritorios)) {
+                printf("\n");
+                printf("*********************************************\n");
+                printf("*   PARABENS! VOCE CUMPRIU SUA MISSAO!     *\n");
+                printf("*           VITORIA CONQUISTADA!           *\n");
+                printf("*********************************************\n");
+                printf("\nSua missao era: %s\n", missaoJogador);
+                printf("\nPressione Enter para finalizar o jogo...");
+                getchar();
+                break;
+            }
 
             printf("\nPressione Enter para continuar...");
             getchar();
@@ -202,7 +359,7 @@ int main() {
 
     // 3. Limpeza:
     // - Ao final do jogo, libera a memória alocada para o mapa para evitar vazamentos de memória.
-    free(territorio);
+    freeMemory(territorio, missaoJogador);
 
     return 0;
 }
